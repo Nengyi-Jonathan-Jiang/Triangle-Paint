@@ -5,12 +5,13 @@ public class GraphicsRunner extends JFrame {
     private static final int HEIGHT = 900;
 
     public GraphicsRunner() {
-        super("Kirby Sim");
+        super("Triangle Paint");
 
         setSize(WIDTH, HEIGHT);
 
         TrianglePaint c = new TrianglePaint();
         c.keys = new MyKeyListener(this);
+        new MyMouseListener(this,c);
         getContentPane().add(c);
 
         setVisible(true);
