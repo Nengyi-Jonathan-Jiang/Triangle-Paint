@@ -84,11 +84,13 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
     @Override
     public void onMouseClick(int x, int y) {
-        double X = x / scale, Y = y / scale;
-        double y_3_3 = y * SQRT_3_3;
+        double X = x / scale, Y = y / scale * SQRT_3_3;
 
-        int i = (int)(X - (y_3_3 % 1));
-        int j = 2 * (int)(2 * y_3_3) + (int)((X - y_3_3 % 1) - ((2 * y_3_3) % 1));
+        int i = (int)(X - (Y % 1));
+        int j = 2 * (int)(2 * Y) + (int)(((X - Y) % 1) - ((2 * Y) % 1));
+
+        System.out.println("Detected click at (" + X + ", " + Y + "): updating cell at (" + i + ", " + j + ")");
+
         data[i][j] = (byte)((data[i][j] + 1) & 3);
     }
 
