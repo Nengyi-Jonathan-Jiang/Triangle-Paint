@@ -17,7 +17,6 @@ public class MyMouseListener {
             @Override
             public void mouseClicked(MouseEvent event) {
                 m.onMouseClick(event.getX(), event.getY());
-                System.out.println("Detected event: Mouse clicked");
             }
             @Override
             public void mouseMoved(MouseEvent event){
