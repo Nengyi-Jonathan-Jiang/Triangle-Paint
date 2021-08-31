@@ -4,6 +4,8 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserver{
+    public static final int WIDTH = 800;
+    public static final int HEIGHT = 600;
 
     private static final double SQRT_3 = 1.73205080757;
     private static final int SIZE = 32;
@@ -17,11 +19,11 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
     private byte[][] data = new byte[SIZE][SIZE * 2];
 
-    private double scale = 64.0;
+    private double scale = 32.0;
 
     public TrianglePaint() // constructor - sets up the class
     {
-        setSize(1600, 900);
+        setSize(WIDTH,HEIGHT);
         setBackground(BLACK);
         setVisible(true);
 
@@ -48,11 +50,11 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         Color color;
 
         for(int i = 0; i < SIZE; i++){   //loop through x's
-            int x1 = (int)((2 * i + 0) * scale / 2),
-                x2 = (int)((2 * i + 1) * scale / 2),
-                x3 = (int)((2 * i + 2) * scale / 2),
-                x4 = (int)((2 * i + 3) * scale / 2),
-                x5 = (int)((2 * i + 4) * scale / 2);
+            int x1 = (int)((i + 0.0) * scale),
+                x2 = (int)((i + 0.5) * scale),
+                x3 = (int)((i + 1.0) * scale),
+                x4 = (int)((i + 1.5) * scale),
+                x5 = (int)((i + 2.0) * scale);
             a: for(int j = 0; j < SIZE * 2; j++){
                 int y1 = (int)(((j >> 1) + 0) * scale),// * SQRT_3),
                     y2 = (int)(((j >> 1) + 1) * scale);// * SQRT_3);
@@ -85,12 +87,13 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
     @Override
     public void onMouseClick(int x, int y) {
-        double X = x / scale, Y = y / scale;// / SQRT_3;
+        double Y = y / scale, X = x / scale - 0.5 * (Y % 2); ;// / SQRT_3;
 
-        int i = (int)(X);
-        int j = 2 * (int)(Y);
+        int i = (int)X;
+        int j = 2 * (int)Y;
+        if(X - Math.floor(X) - Y + Math.floor(Y) >= 1) j++;
 
-        System.out.println("(" + x + "," + y + ") | (" + (int)X + ", " + (int)Y + ") | (" + i + ", " + j + ")");
+        System.out.println("(" + (int)X + ", " + (int)Y + ") | (" + i + ", " + j + ")");
 
         data[i][j] = (byte)((data[i][j] + 1) & 3);
     }
