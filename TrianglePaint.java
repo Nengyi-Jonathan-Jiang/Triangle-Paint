@@ -7,36 +7,39 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
 
+    private static double time = 0;
+
     private static final double SQRT_3_2 = 0.86602540378;
     private static final int SIZE = 32;
 
-    private static final Color BLACK     = new Color(0,0,0);
-    private static final Color BLUE      = new Color(25, 60, 100);
-    private static final Color BLUE_GREY = new Color(100, 130, 170);
-    private static final Color WHITE     = new Color(255,255,255);
-    private static final Color GRAY      = new Color(127,127,127);
+    private static final Color[] COLORS = new Color[]{
+        new Color(  0,  0,  0),
+        new Color( 25, 60,100),
+        new Color(100,130,170),
+    };
 
     public MyKeyListener keys;
 
-    private byte[][] data = new byte[SIZE][SIZE * 2];
+    private int[][] data = new int[SIZE][SIZE * 2];
 
     private double scale = 33.3;
 
     private boolean isMouseDown = false;
     private int mouseX = 0;
     private int mouseY = 0;
+    public int currColor = 0;
 
     public TrianglePaint() // constructor - sets up the class
     {
         setSize(WIDTH,HEIGHT);
-        setBackground(WHITE);
+        setBackground(Color.WHITE);
         setVisible(true);
 
         //Key press detection
         keys = new MyKeyListener(this);
 
         //Repaint window at 100 FPS
-        new Timer(10, e -> repaint()).start();
+        new Timer(10, e -> {repaint(); time += 0.01;}).start();
     }
 
     @Override
@@ -46,57 +49,63 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         g.setStroke(new BasicStroke(1));
         
         for(int i = 0; i < SIZE; i++){
-            //All possible x-coords, I calculate them once
-            int x1 = (int)((i - 1.) * scale),
-                x2 = (int)((i - .5) * scale),
-                x3 = (int)((i + 0.) * scale),
-                x4 = (int)((i + .5) * scale),
+            int x1 = (int)((i - 1.) * scale), x2 = (int)((i - .5) * scale),
+                x3 = (int)((i + 0.) * scale), x4 = (int)((i + .5) * scale),
                 x5 = (int)((i + 1.) * scale);
-            a: for(int j = 0; j < SIZE * 2; j++){
-                int y1 = (int)(((j >> 1) + 0) * scale * SQRT_3_2),
-                    y2 = (int)(((j >> 1) + 1) * scale * SQRT_3_2);
+            
+            for(int j = 0; j < SIZE * 2; j++){
+                int y1 = (int)((j / 2) * scale * SQRT_3_2), y2 = (int)((j / 2 + 1) * scale * SQRT_3_2);
 
-                switch(data[i][j]){ //set color
-                    case 1:     g.setColor(BLACK); break;
-                    case 2:     g.setColor(BLUE_GREY); break;
-                    case 3:     g.setColor(BLUE); break;
-                    default: 
-                        if(!keys.isKeyPressed(KeyEvent.VK_V)){
-                            g.setColor(GRAY);
-                            switch(j & 3){
-                                case 0:
-                                    g.drawPolygon(new int[]{y1,y2,y1}, new int[]{x1,x2,x3}, 3);
-                                    break;
-                                case 1:
-                                    g.drawPolygon(new int[]{y2,y1,y2}, new int[]{x2,x3,x4}, 3);
-                                    break;
-                                case 2:
-                                    g.drawPolygon(new int[]{y1,y2,y1}, new int[]{x2,x3,x4}, 3);
-                                    break;
-                                case 3:
-                                    g.drawPolygon(new int[]{y2,y1,y2}, new int[]{x3,x4,x5}, 3);
-                                    break;
-                                default: break;
-                            }
-                        }
-                        continue a;
+                if(i == mouseX && j == mouseY){ //cell is hovered over
+                    if(((int)(time * 10) & 1) == 0){
+                        g.setColor(COLORS[this.currColor]);
+                        fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
+                    }
                 }
-                switch(j & 3){
-                    case 0:
-                        g.fillPolygon(new int[]{y1,y2,y1}, new int[]{x1,x2,x3}, 3);
-                        break;
-                    case 1:
-                        g.fillPolygon(new int[]{y2,y1,y2}, new int[]{x2,x3,x4}, 3);
-                        break;
-                    case 2:
-                        g.fillPolygon(new int[]{y1,y2,y1}, new int[]{x2,x3,x4}, 3);
-                        break;
-                    case 3:
-                        g.fillPolygon(new int[]{y2,y1,y2}, new int[]{x3,x4,x5}, 3);
-                        break;
-                    default: break;
+                if(data[i][j] > 0){   //cell has color
+                    g.setColor(COLORS[data[i][j] - 1]);
+                    fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
+                }
+                else if(!keys.isKeyPressed(KeyEvent.VK_V)){ //cell is empty, and user not pressing 'v'
+                    g.setColor(Color.GRAY);
+                    drawTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
             }
+        }
+    }
+
+    private void fillTriAt(Graphics2D g, int x1, int x2, int x3, int x4, int x5, int y1, int y2, int j){
+        switch(j & 3){
+            case 0:
+                g.fillPolygon(new int[]{y1,y2,y1}, new int[]{x1,x2,x3}, 3);
+                break;
+            case 1:
+                g.fillPolygon(new int[]{y2,y1,y2}, new int[]{x2,x3,x4}, 3);
+                break;
+            case 2:
+                g.fillPolygon(new int[]{y1,y2,y1}, new int[]{x2,x3,x4}, 3);
+                break;
+            case 3:
+                g.fillPolygon(new int[]{y2,y1,y2}, new int[]{x3,x4,x5}, 3);
+                break;
+            default: break;
+        }
+    }
+    private void drawTriAt(Graphics2D g, int x1, int x2, int x3, int x4, int x5, int y1, int y2, int j){
+        switch(j & 3){
+            case 0:
+                g.drawPolygon(new int[]{y1,y2,y1}, new int[]{x1,x2,x3}, 3);
+                break;
+            case 1:
+                g.drawPolygon(new int[]{y2,y1,y2}, new int[]{x2,x3,x4}, 3);
+                break;
+            case 2:
+                g.drawPolygon(new int[]{y1,y2,y1}, new int[]{x2,x3,x4}, 3);
+                break;
+            case 3:
+                g.drawPolygon(new int[]{y2,y1,y2}, new int[]{x3,x4,x5}, 3);
+                break;
+            default: break;
         }
     }
 
@@ -117,7 +126,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     @Override
     public void onMouseDown(int x, int y) {
         isMouseDown = true;
-        data[mouseX][mouseY] = (byte)((data[mouseX][mouseY] + 1) & 3);
+        data[mouseX][mouseY] = currColor + 1;
     }
     
     @Override
