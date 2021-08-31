@@ -9,7 +9,7 @@ public class GraphicsRunner extends JFrame {
 
         TrianglePaint c = new TrianglePaint();
         c.keys = new MyKeyListener(this);
-        //new MyMouseListener(this,c);
+        //new MyMouseListener(this.getContentPane(),c);
         new MyMouseListener(c,c);
         getContentPane().add(c);
 
