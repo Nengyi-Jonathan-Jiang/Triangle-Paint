@@ -19,6 +19,8 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
     private static final Color[] COLORS = new Color[]{
         new Color(  0,  0,  0),
+        new Color(100,100,100),
+        new Color(200,200,200),
         new Color( 25, 60,100),
         new Color(100,130,170),
         new Color( 90,  0,  0),
@@ -69,7 +71,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
             for(int j = 0; j < SIZE * 2; j++){
                 int y1 = (int)((j / 2) * scale * SQRT_3_2), y2 = (int)((j / 2 + 1) * scale * SQRT_3_2);
 
-                if(i == mouseX && j == mouseY && ((int)(time * 10) & 1) == 0){ //cell is hovered over
+                if(i == mouseX && j == mouseY && ((int)(time * 15) & 1) == 0){ //cell is hovered over
                     g.setColor(COLORS[this.currColor]);
                     fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
@@ -78,7 +80,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                     fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
                 else if(!keys.isKeyPressed(KeyEvent.VK_V)){ //cell is empty, and user not pressing 'v'
-                    g.setColor(Color.GRAY);
+                    g.setColor(new Color(200,200,200));
                     drawTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
             }
@@ -190,6 +192,10 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 currColor = 5; break;
             case KeyEvent.VK_7:
                 currColor = 6; break;
+            case KeyEvent.VK_8:
+                currColor = 7; break;
+            case KeyEvent.VK_9:
+                currColor = 8; break;
         }
     }
 
