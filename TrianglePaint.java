@@ -7,10 +7,15 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
 
+    private enum States{
+        IDLE, DRAWING, ERASING
+    };
+    private States currState = States.IDLE;
+
     private static double time = 0;
 
     private static final double SQRT_3_2 = 0.86602540378;
-    private static final int SIZE = 32;
+    private static final int SIZE = 64;
 
     private static final Color[] COLORS = new Color[]{
         new Color(  0,  0,  0),
@@ -18,6 +23,8 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         new Color(100,130,170),
         new Color( 90,  0,  0),
         new Color(222,127,127),
+        new Color(135,245, 66),
+        new Color( 66,135, 33),
     };
 
     public MyKeyListener keys;
@@ -26,7 +33,6 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
     private double scale = 33.3;
 
-    private boolean isMouseDown = false;
     private int mouseX = 0;
     private int mouseY = 0;
     public int currColor = 0;
@@ -63,13 +69,11 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
             for(int j = 0; j < SIZE * 2; j++){
                 int y1 = (int)((j / 2) * scale * SQRT_3_2), y2 = (int)((j / 2 + 1) * scale * SQRT_3_2);
 
-                if(i == mouseX && j == mouseY){ //cell is hovered over
-                    if(((int)(time * 10) & 1) == 0){
-                        g.setColor(COLORS[this.currColor]);
-                        fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
-                    }
+                if(i == mouseX && j == mouseY && ((int)(time * 10) & 1) == 0){ //cell is hovered over
+                    g.setColor(COLORS[this.currColor]);
+                    fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
-                if(data[i][j] > 0){   //cell has color
+                else if(data[i][j] > 0){   //cell has color
                     g.setColor(COLORS[data[i][j] - 1]);
                     fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
@@ -124,6 +128,16 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         double Y = x / scale / SQRT_3_2, X = y / scale - 0.5 * (Y % 2) + 1.;
         mouseX = (int)X;
         mouseY = 2 * (int)Y + (int)((X % 1.0) + (Y % 1.0));
+
+        switch(currState){
+            case IDLE: break;
+            case DRAWING:
+                data[mouseX][mouseY] = currColor + 1;
+                break;
+            case ERASING:
+                data[mouseX][mouseY] = 0;
+                break;
+        }
     }
     @Override
     public void onMouseWheel(int wheelRotation) {
@@ -137,11 +151,12 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     public void onMouseDown(int x, int y, MyMouseListener.Button b) {
         switch(b){
             case LEFT_CLICK:
-                isMouseDown = true;
+                currState = States.DRAWING;
                 data[mouseX][mouseY] = currColor + 1;
                 break;
             case MIDDLE_CLICK: break;
             case RIGHT_CLICK:
+                currState = States.ERASING;
                 data[mouseX][mouseY] = 0;
                 break;
             case NO_CLICK: break;
@@ -151,7 +166,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     
     @Override
     public void onMouseUp(int x, int y, MyMouseListener.Button b) {
-        isMouseDown = false;
+        currState = States.IDLE;
     }
 
     //#endregion
@@ -171,6 +186,10 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 currColor = 3; break;
             case KeyEvent.VK_5:
                 currColor = 4; break;
+            case KeyEvent.VK_6:
+                currColor = 5; break;
+            case KeyEvent.VK_7:
+                currColor = 6; break;
         }
     }
 
