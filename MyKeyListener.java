@@ -4,33 +4,44 @@ import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 
 public class MyKeyListener {
+    private int i;
     private TreeMap<Integer,Boolean> keys;
-    private TreeMap<Integer,ArrayList<Callback>> key_callbacks;
+    private TreeMap<Integer,KeyObserver> observers;
 
-    public static interface Callback{
-        public void onKeyPressed();
+    public static interface KeyObserver{
+        public void onKeyPressed(int keyCode);
+        public void onKeyReleased(int keyCode);
+        public void onKeyTyped(int keyCode);
     }
 
     public MyKeyListener(Component c){
         keys = new TreeMap<>();
+        observers = new TreeMap<Integer,KeyObserver>();
 
         c.addKeyListener(new KeyListener(){
             public void keyPressed(KeyEvent e){
                 keys.put(e.getKeyCode(),true);
+                for(KeyObserver o : observers.values()){
+                    o.onKeyPressed(e.getKeyCode());
+                }
             }
             public void keyReleased(KeyEvent e){
                 keys.put(e.getKeyCode(),false);
+                for(KeyObserver o : observers.values()){
+                    o.onKeyReleased(e.getKeyCode());
+                }
             }
             public void keyTyped(KeyEvent e){
-                for(Callback f : key_callbacks.get(e.getKeyCode())){
-                    f.onKeyPressed();
+                for(KeyObserver o : observers.values()){
+                    o.onKeyTyped(e.getKeyCode());
                 }
             }
         });
     }
 
-    public void addKeyCallback(int keyCode, Callback f){
-        key_callbacks.get(keyCode).add(f);
+    public int addObserver(KeyObserver o){
+        observers.put(i,o);
+        return i++;
     }
 
     public boolean isKeyPressed(int c){

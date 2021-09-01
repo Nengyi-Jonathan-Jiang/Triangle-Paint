@@ -6,27 +6,38 @@ import java.awt.event.MouseWheelListener;
 import java.awt.event.MouseMotionListener;
 
 public class MyMouseListener {
+    public enum Button{
+        LEFT_CLICK,
+        RIGHT_CLICK,
+        MIDDLE_CLICK,
+        NO_CLICK
+    }
+    private Button getButton(MouseEvent event){
+        int b = event.getButton();
+        return b == 1 ? Button.LEFT_CLICK : b == 2 ? Button.MIDDLE_CLICK : b == 3 ? Button.RIGHT_CLICK : Button.NO_CLICK;
+    }
+
     public static interface MouseObserver{
-        public void onMouseClick(int x, int y);
+        public void onMouseClick(int x, int y, Button b);
         public void onMouseWheel(int wheelRotation);
         public void onMouseMove(int x, int y);
-        public void onMouseDown(int x, int y);
-        public void onMouseUp(int x, int y);
+        public void onMouseDown(int x, int y, Button b);
+        public void onMouseUp(int x, int y, Button b);
     }
 
     public MyMouseListener(Component c, MouseObserver m){
         c.addMouseListener(new MouseListener(){
             @Override
             public void mouseClicked(MouseEvent event) {
-                m.onMouseClick(event.getX(), event.getY());
+                m.onMouseClick(event.getX(), event.getY(), getButton(event));
             }
             @Override
             public void mousePressed(MouseEvent event){
-                m.onMouseDown(event.getX(), event.getY());
+                m.onMouseDown(event.getX(), event.getY(), getButton(event));
             }
             @Override
             public void mouseReleased(MouseEvent event){
-                m.onMouseUp(event.getX(), event.getY());
+                m.onMouseUp(event.getX(), event.getY(), getButton(event));
             }
 
             @Override

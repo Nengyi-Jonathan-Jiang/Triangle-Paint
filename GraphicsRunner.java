@@ -8,8 +8,7 @@ public class GraphicsRunner extends JFrame {
         setSize(TrianglePaint.WIDTH,TrianglePaint.HEIGHT);
 
         TrianglePaint c = new TrianglePaint();
-        c.keys = new MyKeyListener(this);
-        //new MyMouseListener(this.getContentPane(),c);
+        c.setKeyListener(new MyKeyListener(this));
         new MyMouseListener(c,c);
         getContentPane().add(c);
 

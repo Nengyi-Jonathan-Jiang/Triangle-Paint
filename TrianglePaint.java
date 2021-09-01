@@ -3,7 +3,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserver{
+public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserver, MyKeyListener.KeyObserver{
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
 
@@ -16,6 +16,8 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         new Color(  0,  0,  0),
         new Color( 25, 60,100),
         new Color(100,130,170),
+        new Color( 90,  0,  0),
+        new Color(222,127,127),
     };
 
     public MyKeyListener keys;
@@ -40,6 +42,11 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
         //Repaint window at 100 FPS
         new Timer(10, e -> {repaint(); time += 0.01;}).start();
+    }
+
+    public void setKeyListener(MyKeyListener l){
+        keys = l;
+        l.addObserver(this);
     }
 
     @Override
@@ -109,12 +116,8 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         }
     }
 
-    @Override
-    public void onMouseClick(int x, int y) {}
-    @Override
-    public void onMouseWheel(int wheelRotation) {
-        scale *= 1. - .01 * wheelRotation;
-    }
+
+    //#region MouseObserver interface implementations
 
     @Override
     public void onMouseMove(int x, int y) {
@@ -122,15 +125,59 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         mouseX = (int)X;
         mouseY = 2 * (int)Y + (int)((X % 1.0) + (Y % 1.0));
     }
+    @Override
+    public void onMouseWheel(int wheelRotation) {
+        scale *= 1. - .01 * wheelRotation;
+    }
 
     @Override
-    public void onMouseDown(int x, int y) {
-        isMouseDown = true;
-        data[mouseX][mouseY] = currColor + 1;
+    public void onMouseClick(int x, int y, MyMouseListener.Button b) {}
+
+    @Override
+    public void onMouseDown(int x, int y, MyMouseListener.Button b) {
+        switch(b){
+            case LEFT_CLICK:
+                isMouseDown = true;
+                data[mouseX][mouseY] = currColor + 1;
+                break;
+            case MIDDLE_CLICK: break;
+            case RIGHT_CLICK:
+                data[mouseX][mouseY] = 0;
+                break;
+            case NO_CLICK: break;
+            
+        }
     }
     
     @Override
-    public void onMouseUp(int x, int y) {
+    public void onMouseUp(int x, int y, MyMouseListener.Button b) {
         isMouseDown = false;
     }
+
+    //#endregion
+
+    //#region KeyObserver interface implementations
+
+    @Override
+    public void onKeyPressed(int keyCode) {
+        switch(keyCode){
+            case KeyEvent.VK_1:
+                currColor = 0; break;
+            case KeyEvent.VK_2:
+                currColor = 1; break;
+            case KeyEvent.VK_3:
+                currColor = 2; break;
+            case KeyEvent.VK_4:
+                currColor = 3; break;
+            case KeyEvent.VK_5:
+                currColor = 4; break;
+        }
+    }
+
+    @Override
+    public void onKeyReleased(int keyCode){}
+    @Override
+    public void onKeyTyped(int keyCode){}
+
+    //#endregion
 }
