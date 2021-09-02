@@ -7,13 +7,13 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
 
-    private enum States{IDLE, DRAWING, ERASING}
+    private enum States{IDLE, DRAWING, ERASING, DRAW_BLENDED_EDGE}
     private States currState = States.IDLE;
 
     private double time = 0;
 
     private static final double SQRT_3_2 = 0.86602540378;
-    private static final int SIZE = 64;
+    private static final int SIZE = 32;
 
     private static final Color[] COLORS = new Color[]{
         new Color(  0,  0,  0),
@@ -31,6 +31,8 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
     private int[][] triangleData = new int[SIZE][SIZE * 2];
     private boolean[][] edgeData = new boolean[SIZE][SIZE * 3];
+
+    private boolean showGrid = true;
 
     private double scale = 33.3;
 
@@ -71,15 +73,17 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
             for(int j = 0; j < SIZE * 2; j++){
                 int y1 = (int)((j / 2) * scale * SQRT_3_2), y2 = (int)((j / 2 + 1) * scale * SQRT_3_2);
 
-                if(i == mouseX && j == mouseY && blinking && currState != States.ERASING){ //cell is hovered over
-                    g.setColor(COLORS[this.currColor]);
-                    fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
+                if(i == mouseX && j == mouseY  && showGrid){ //cell is hovered over
+                    if(blinking && currState != States.ERASING){
+                        g.setColor(COLORS[this.currColor]);
+                        fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
+                    }
                 }
                 else if(triangleData[i][j] > 0){   //cell has color
                     g.setColor(COLORS[triangleData[i][j] - 1]);
                     fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
-                else if(!keys.isKeyPressed(KeyEvent.VK_V)){ //cell is empty, and user not pressing 'v'
+                else if(showGrid){ //cell is empty, and user not pressing 'v'
                     g.setColor(new Color(200,200,200));
                     drawTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
@@ -154,9 +158,9 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 };
             case 1:
                 return new Edge[]{
-                    new Edge(x,y,x + 0, y + 1, x + 1, y_ + 1),
+                    new Edge(x,y,x + 0, y + 1, x + 0, y_ + 3),
                     new Edge(x,y,x + 0, y - 1, x + 0, y_ + 2),
-                    new Edge(x,y,x + 1, y - 1, x + 0, y_ + 3),
+                    new Edge(x,y,x + 1, y - 1, x + 1, y_ + 1),
                 };
             case 2:
                 return new Edge[]{
@@ -168,7 +172,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 return new Edge[]{
                     new Edge(x,y,x + 1, y - 1, x + 1, y_ + 4),
                     new Edge(x,y,x + 0, y - 1, x + 0, y_ + 5),
-                    new Edge(x,y,x + 0, y + 1, x + 1, y_ + 6),
+                    new Edge(x,y,x + 1, y + 1, x + 1, y_ + 6),
                 };
             default: return null;
         }
@@ -209,24 +213,21 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
         switch(currState){
             case IDLE: break;
+            case DRAW_BLENDED_EDGE:
+                triangleData[mouseX][mouseY] = currColor + 1;
+                for(Edge e : getAdjacentEdges(mouseX, mouseY)){
+                    edgeData[e.ex][e.ey] = triangleData[e.x2][e.y2] != currColor + 1;
+                }
+                currState = States.DRAWING;
+                break;
             case DRAWING:
                 triangleData[mouseX][mouseY] = currColor + 1;
-                if(lastMouseX == -1){
+                if(mouseX != lastMouseX || mouseY != lastMouseY){
                     for(Edge e : getAdjacentEdges(mouseX, mouseY)){
-                        edgeData[e.ex][e.ey] = true;
-                    }
-                }
-                else if(mouseX != lastMouseX || mouseY != lastMouseY){
-                    //System.out.println("Draw: moved to new triangle from (" + lastMouseX + ", " + lastMouseY + ") to (" + mouseX + ", " + mouseY + ")");
-                    
-                    for(Edge e : getAdjacentEdges(mouseX, mouseY)){
-                        //System.out.println("Found edge from (" + e.x1 + ", " + e.y1 + ") to (" + e.x2 + ", " + e.y2 + ")");
                         if(e.x2 == lastMouseX && e.y2 == lastMouseY){
-                            //System.out.println("Draw: removed edge between (" + e.x1 + ", " + e.y1 + ") to (" + e.x2 + ", " + e.y2 + ")");
                             edgeData[e.ex][e.ey] = false;
                         }
                         else{
-                            //System.out.println("Draw: filled edge between (" + e.x1 + ", " + e.y1 + ") to (" + e.x2 + ", " + e.y2 + ")");
                             edgeData[e.ex][e.ey] = true;
                         }
                     }
@@ -257,7 +258,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     public void onMouseDown(int x, int y, MyMouseListener.Button b) {
         switch(b){
             case LEFT_CLICK:
-                currState = States.DRAWING;
+                currState = States.DRAW_BLENDED_EDGE;
                 onMouseMove(x,y);
                 break;
             case MIDDLE_CLICK: break;
@@ -301,6 +302,8 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 currColor = 7; break;
             case KeyEvent.VK_9:
                 currColor = 8; break;
+            case KeyEvent.VK_V:
+                showGrid = !showGrid; break;
         }
     }
 
