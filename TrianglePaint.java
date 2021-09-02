@@ -130,23 +130,6 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
             default: break;
         }
     }
-    private void drawTriAt(Graphics2D g, int x1, int x2, int x3, int x4, int x5, int y1, int y2, int j){
-        switch(j & 3){
-            case 0:
-                g.drawPolygon(new int[]{y1,y2,y1}, new int[]{x1,x2,x3}, 3);
-                break;
-            case 1:
-                g.drawPolygon(new int[]{y2,y1,y2}, new int[]{x2,x3,x4}, 3);
-                break;
-            case 2:
-                g.drawPolygon(new int[]{y1,y2,y1}, new int[]{x2,x3,x4}, 3);
-                break;
-            case 3:
-                g.drawPolygon(new int[]{y2,y1,y2}, new int[]{x3,x4,x5}, 3);
-                break;
-            default: break;
-        }
-    }
 
     public static class Edge{
         public int x1,y1,x2,y2,ex,ey;
@@ -183,7 +166,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                     new Edge(x,y,x + 0, y - 1, x + 0, y_ + 5),
                     new Edge(x,y,x + 1, y + 1, x + 1, y_ + 6),
                 };
-            default: return null;
+            default: return new Edge[]{};
         }
     }
     public void drawEdge(Graphics2D g, int x1, int x2, int x3, int x4, int y1, int y2, int j){
@@ -206,6 +189,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
             case 5:
                 g.drawLine(y2,x3,y1,x4);
                 break;
+            default: break;
         }
     }
 
@@ -213,48 +197,60 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
 
     @Override
     public void onMouseMove(int x, int y) {
-        double Y = x / scale / SQRT_3_2, X = y / scale - 0.5 * (Y % 2) + 1.;
         lastMouseX = mouseX;
         lastMouseY = mouseY;
 
+        double Y = x / scale / SQRT_3_2, X = y / scale - 0.5 * (Y % 2) + 1.;
         mouseX = (int)X;
         mouseY = 2 * (int)Y + (int)((X % 1.0) + (Y % 1.0));
 
         switch(currState){
             case IDLE: break;
             case DRAW_BLENDED_EDGE:
-                triangleData[mouseX][mouseY] = currColor + 1;
-                for(Edge e : getAdjacentEdges(mouseX, mouseY)){
-                    edgeData[e.ex][e.ey] = triangleData[e.x2][e.y2] != currColor + 1;
-                }
+                drawBlendedEdge();
                 if(!keys.isKeyPressed(KeyEvent.VK_CONTROL)) currState = States.DRAWING;
                 break;
             case DRAWING:
-                triangleData[mouseX][mouseY] = currColor + 1;
-                if(mouseX != lastMouseX || mouseY != lastMouseY){
-                    for(Edge e : getAdjacentEdges(mouseX, mouseY)){
-                        if(e.x2 == lastMouseX && e.y2 == lastMouseY){
-                            edgeData[e.ex][e.ey] = false;
-                        }
-                        else{
-                            edgeData[e.ex][e.ey] = true;
-                        }
-                    }
-                }
+                drawNormal();
                 break;
             case ERASING:
-                triangleData[mouseX][mouseY] = 0;
-                for(Edge e : getAdjacentEdges(mouseX, mouseY)){
-                    if(triangleData[e.x1][e.y1] + triangleData[e.x2][e.y2] != 0){
-                        edgeData[e.ex][e.ey] = true;
-                    }
-                    else{
-                        edgeData[e.ex][e.ey] = false;
-                    }
-                }
+                erase();
                 break;
         }
     }
+
+    //#region drawing functions
+    private void drawBlendedEdge(){
+        triangleData[mouseX][mouseY] = currColor + 1;
+        for(Edge e : getAdjacentEdges(mouseX, mouseY)){
+            edgeData[e.ex][e.ey] = triangleData[e.x2][e.y2] != currColor + 1;
+        }
+    }
+    private void drawNormal(){triangleData[mouseX][mouseY] = currColor + 1;
+        if(mouseX != lastMouseX || mouseY != lastMouseY){
+            for(Edge e : getAdjacentEdges(mouseX, mouseY)){
+                if(e.x2 == lastMouseX && e.y2 == lastMouseY){
+                    edgeData[e.ex][e.ey] = false;
+                }
+                else{
+                    edgeData[e.ex][e.ey] = true;
+                }
+            }
+        }
+    }
+    private void erase(){
+        triangleData[mouseX][mouseY] = 0;
+        for(Edge e : getAdjacentEdges(mouseX, mouseY)){
+            if(triangleData[e.x1][e.y1] + triangleData[e.x2][e.y2] != 0){
+                edgeData[e.ex][e.ey] = true;
+            }
+            else{
+                edgeData[e.ex][e.ey] = false;
+            }
+        }
+    }
+    //#endregion
+
     @Override
     public void onMouseWheel(int wheelRotation) {
         scale *= 1. - .01 * wheelRotation;
@@ -318,6 +314,8 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 break;
             case KeyEvent.VK_V:
                 showGrid = !showGrid; break;
+            
+            default:break;
         }
     }
 
