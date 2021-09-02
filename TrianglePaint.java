@@ -53,8 +53,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     }
 
     public void setKeyListener(MyKeyListener l){
-        keys = l;
-        l.addObserver(this);
+        keys = l; l.addObserver(this);
     }
 
     @Override
@@ -62,21 +61,30 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         super.paint(window);
         Graphics2D g = (Graphics2D)window;
         g.setStroke(new BasicStroke(1));
-        Rectangle r = getBounds();
 
         boolean blinking = ((int)(time * 15) & 3) != 0 && showGrid;
 
-        
-
         if(showGrid){
             g.setColor(new Color(200,200,200));
-            for(int i = 0; i < SIZE; i++){
-                g.drawLine(
-                    (int)(i * scale * SQRT_3_2),
-                    0,
-                    (int)(i * scale * SQRT_3_2),
-                    r.height
-                );
+            for(int i = 0; i <= SIZE; i++){
+                g.drawLine((int)(i * scale * SQRT_3_2), 0, (int)(i * scale * SQRT_3_2), (int)(SIZE * scale));
+            }
+            for(int i = 0; i <= SIZE * 3 / 2; i++){
+                g.drawLine(0, (int)(i * scale), (int)(SIZE * scale * SQRT_3_2), (int)((i - SIZE / 2) * scale));
+                g.drawLine(0, (int)((i - SIZE / 2) * scale), (int)(SIZE * scale * SQRT_3_2), (int)(i * scale));
+            }
+            g.setColor(Color.WHITE);
+            g.fillRect(0,(int)(SIZE * scale),(int)(SIZE * scale * SQRT_3_2),(int)(SIZE / 2 * scale));
+            for(int i = 0; i < SIZE; i += 2){
+                g.fillPolygon(new int[]{
+                    (int)((i) * scale * SQRT_3_2) + 1,
+                    (int)((i) * scale * SQRT_3_2) + 1,
+                    (int)((i + 2) * scale * SQRT_3_2) - 1,
+                }, new int[]{
+                    (int)((SIZE - 1) * scale) + 1,
+                    (int)(SIZE * scale) + 1,
+                    (int)(SIZE * scale) + 1,
+                }, 3);
             }
         }
 
@@ -272,7 +280,6 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 onMouseMove(x,y);
                 break;
             case NO_CLICK: break;
-            
         }
     }
     
@@ -289,6 +296,12 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     @Override
     public void onKeyPressed(int keyCode) {
         switch(keyCode){
+            case KeyEvent.VK_EQUALS:
+                scale *= 1.01;
+                break;
+            case KeyEvent.VK_MINUS:
+                scale *= 0.99;
+                break;
             case KeyEvent.VK_1:
                 currColor = 0; break;
             case KeyEvent.VK_2:
