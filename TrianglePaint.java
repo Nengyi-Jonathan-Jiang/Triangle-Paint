@@ -13,12 +13,12 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     private double time = 0;
 
     private static final double SQRT_3_2 = 0.86602540378;
-    private static final int SIZE = 32;
+    private static final int SIZE = 64;
 
     private static final Color[] COLORS = new Color[]{
-        new Color(  0,  0,  0),
-        new Color(100,100,100),
-        new Color(200,200,200),
+        new Color( 30, 30, 30),
+        new Color(130,130,130),
+        new Color(230,230,230),
         new Color( 25, 60,100),
         new Color(100,130,170),
         new Color( 90,  0,  0),
@@ -62,8 +62,23 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         super.paint(window);
         Graphics2D g = (Graphics2D)window;
         g.setStroke(new BasicStroke(1));
+        Rectangle r = getBounds();
+
+        boolean blinking = ((int)(time * 15) & 3) != 0 && showGrid;
+
         
-        boolean blinking = ((int)(time * 15) & 3) != 0;
+
+        if(showGrid){
+            g.setColor(new Color(200,200,200));
+            for(int i = 0; i < SIZE; i++){
+                g.drawLine(
+                    (int)(i * scale * SQRT_3_2),
+                    0,
+                    (int)(i * scale * SQRT_3_2),
+                    r.height
+                );
+            }
+        }
 
         //Draw filled triangles (or triangle outlines)
         for(int i = 0; i < SIZE; i++){
@@ -73,7 +88,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
             for(int j = 0; j < SIZE * 2; j++){
                 int y1 = (int)((j / 2) * scale * SQRT_3_2), y2 = (int)((j / 2 + 1) * scale * SQRT_3_2);
 
-                if(i == mouseX && j == mouseY  && showGrid){ //cell is hovered over
+                if(i == mouseX && j == mouseY && blinking){ //cell is hovered over
                     if(blinking && currState != States.ERASING){
                         g.setColor(COLORS[this.currColor]);
                         fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
@@ -83,23 +98,17 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                     g.setColor(COLORS[triangleData[i][j] - 1]);
                     fillTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
                 }
-                else if(showGrid){ //cell is empty, and user not pressing 'v'
-                    g.setColor(new Color(200,200,200));
-                    drawTriAt(g,x1,x2,x3,x4,x5,y1,y2,j);
-                }
             }
         }
 
         //Draw edges
+        g.setColor(Color.BLACK);
         for(int i = 0; i < SIZE; i++){
             int x1 = (int)((i - 1.) * scale), x2 = (int)((i - .5) * scale),
                 x3 = (int)((i + 0.) * scale), x4 = (int)((i + .5) * scale);
             for(int j = 0; j < SIZE * 3; j++){
                 int y1 = (int)((j / 3) * scale * SQRT_3_2), y2 = (int)((j / 3 + 1) * scale * SQRT_3_2);
-                if(edgeData[i][j]){   //cell has color
-                    g.setColor(Color.BLACK);
-                    drawEdge(g,x1,x2,x3,x4,y1,y2,j);
-                }
+                if(edgeData[i][j]) drawEdge(g,x1,x2,x3,x4,y1,y2,j);
             }
         }
     }
@@ -218,7 +227,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 for(Edge e : getAdjacentEdges(mouseX, mouseY)){
                     edgeData[e.ex][e.ey] = triangleData[e.x2][e.y2] != currColor + 1;
                 }
-                currState = States.DRAWING;
+                if(!keys.isKeyPressed(KeyEvent.VK_CONTROL)) currState = States.DRAWING;
                 break;
             case DRAWING:
                 triangleData[mouseX][mouseY] = currColor + 1;
@@ -302,6 +311,11 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
                 currColor = 7; break;
             case KeyEvent.VK_9:
                 currColor = 8; break;
+            
+            case KeyEvent.VK_R:
+                for(boolean[] i : edgeData) for(int j = 0; j < i.length; j++) i[j] = false;
+                for(int[] i : triangleData) for(int j = 0; j < i.length; j++) i[j] = 0;
+                break;
             case KeyEvent.VK_V:
                 showGrid = !showGrid; break;
         }
