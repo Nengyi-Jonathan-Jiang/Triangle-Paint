@@ -239,12 +239,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
         triangleData[mouseX][mouseY] = currColor + 1;
         if(mouseX != lastMouseX || mouseY != lastMouseY){
             for(Edge e : getAdjacentEdges(mouseX, mouseY)){
-                if(e.x2 == lastMouseX && e.y2 == lastMouseY){
-                    edgeData[e.ex][e.ey] = false;
-                }
-                else{
-                    edgeData[e.ex][e.ey] = true;
-                }
+                edgeData[e.ex][e.ey] = e.x2 != lastMouseX || e.y2 != lastMouseY;
             }
         }
     }
@@ -252,12 +247,7 @@ public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserv
     private void erase(){
         triangleData[mouseX][mouseY] = 0;
         for(Edge e : getAdjacentEdges(mouseX, mouseY)){
-            if(triangleData[e.x1][e.y1] + triangleData[e.x2][e.y2] != 0){
-                edgeData[e.ex][e.ey] = true;
-            }
-            else{
-                edgeData[e.ex][e.ey] = false;
-            }
+            edgeData[e.ex][e.ey] = triangleData[e.x1][e.y1] + triangleData[e.x2][e.y2] != 0;
         }
     }
     //#endregion
