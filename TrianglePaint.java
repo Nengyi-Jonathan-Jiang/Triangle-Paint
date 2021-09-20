@@ -5,7 +5,7 @@ import javax.swing.Timer;
 
 public class TrianglePaint extends JPanel implements MyMouseListener.MouseObserver, MyKeyListener.KeyObserver{
     public static final int WIDTH = 800;
-    public static final int HEIGHT = 600; 
+    public static final int HEIGHT = 600;
 
     private enum States{IDLE, DRAWING, ERASING, DRAW_BLENDED_EDGE}
     private States currState = States.IDLE;
