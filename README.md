@@ -1,5 +1,5 @@
 # Triangle-Paint
-A rudimentary paint program on a triangle grid. This was written when I had free time during an AP Computer Science A class. I used it to draw "impossible" shapes, but you can use it to draw anything.
+A rudimentary paint program on a triangle grid, written in Java. This was written when I had free time during an AP Computer Science A class. I used it to draw "impossible" shapes, but you can use it to draw anything.
 
 # To run
 After cloning the repository, `javac *.java` then `java Main.java` should usually work.
